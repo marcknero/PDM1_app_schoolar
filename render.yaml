@@ -1,0 +1,40 @@
+# Blueprint Render: PostgreSQL + API Node.js
+# https://render.com/docs/blueprint-spec
+#
+# Como usar:
+# 1. Faça push deste repositório no GitHub/GitLab
+# 2. No Render: New > Blueprint > conecte o repositório
+# 3. Após o deploy, anote a URL (ex.: https://app-schollar-api.onrender.com)
+# 4. Gere o APK com EAS (ver DEPLOY_RENDER.md) apontando para essa URL
+# 5. Coloque o APK em backend/public/downloads/app-schollar.apk e faça redeploy
+
+databases:
+  - name: schollar-db
+    databaseName: schollar
+    user: schollar
+    plan: free
+
+services:
+  - type: web
+    name: app-schollar-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node scripts/setup-db.js && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PGSSL
+        value: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: schollar-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: VIACEP_BASE_URL
+        value: https://viacep.com.br/ws
+      - key: IBGE_BASE_URL
+        value: https://servicodados.ibge.gov.br/api/v1/localidades

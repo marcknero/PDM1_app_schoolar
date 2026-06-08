@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>App Schollar — Download</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #ecfeff;
+        --card: #ffffff;
+        --text: #0f172a;
+        --accent: #0d9488;
+        --muted: #64748b;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #042f2e;
+          --card: #134e4a;
+          --text: #f0fdfa;
+          --muted: #99f6e4;
+        }
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        background: linear-gradient(160deg, var(--bg), #ccfbf1 120%);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      main {
+        width: min(520px, 100%);
+        background: var(--card);
+        border-radius: 20px;
+        padding: 32px;
+        box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12);
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.75rem;
+      }
+
+      p {
+        margin: 0 0 16px;
+        line-height: 1.6;
+        color: var(--muted);
+      }
+
+      .badge {
+        display: inline-block;
+        background: #ccfbf1;
+        color: #115e59;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 6px 10px;
+        border-radius: 999px;
+        margin-bottom: 16px;
+      }
+
+      a.button {
+        display: inline-block;
+        background: var(--accent);
+        color: #fff;
+        text-decoration: none;
+        font-weight: 600;
+        padding: 14px 22px;
+        border-radius: 12px;
+        margin-top: 8px;
+      }
+
+      a.button:hover {
+        filter: brightness(1.05);
+      }
+
+      .note {
+        margin-top: 24px;
+        padding: 16px;
+        border-radius: 12px;
+        background: rgba(13, 148, 136, 0.08);
+        font-size: 0.9rem;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.85em;
+      }
+
+      ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="badge">FATEC Jacareí · PDM</span>
+      <h1>App Schollar</h1>
+      <p>
+        Aplicativo escolar para cadastros, boletim e integração com a API do projeto.
+        Instale no Android para usar fora do ambiente de desenvolvimento.
+      </p>
+
+      <a class="button" href="/downloads/app-schollar.apk">Baixar APK (Android)</a>
+
+      <div class="note">
+        <strong>Login de demonstração</strong>
+        <ul>
+          <li>E-mail: <code>coordenacao@escola.com</code></li>
+          <li>Senha: <code>123456</code></li>
+        </ul>
+        <p style="margin-top: 12px; margin-bottom: 0">
+          API: <code id="api-url">/api</code> · Status:
+          <span id="health-status">verificando...</span>
+        </p>
+      </div>
+    </main>
+
+    <script>
+      const apiUrl = `${window.location.origin}/api`;
+      document.getElementById('api-url').textContent = apiUrl;
+
+      fetch('/health')
+        .then((response) => response.json())
+        .then(() => {
+          document.getElementById('health-status').textContent = 'online';
+        })
+        .catch(() => {
+          document.getElementById('health-status').textContent = 'indisponível';
+        });
+    </script>
+  </body>
+</html>
