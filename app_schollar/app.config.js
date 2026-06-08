@@ -2,7 +2,7 @@ const appJson = require('./app.json');
 
 function normalizeApiBaseUrl(value) {
   if (!value) {
-    return 'http://localhost:3000/api';
+    return 'https://app-schollar-api.onrender.com/api';
   }
 
   const trimmed = value.trim().replace(/\/+$/, '');

@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 
-const defaultApiBaseUrl = 'http://localhost:3000/api';
+const defaultApiBaseUrl = 'https://app-schollar-api.onrender.com/api';
 
 function normalizeApiBaseUrl(value: string | null | undefined) {
   if (!value) {
