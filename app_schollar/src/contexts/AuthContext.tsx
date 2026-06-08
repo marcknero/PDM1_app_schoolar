@@ -1,4 +1,6 @@
-import React, { ReactNode, createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { ReactNode, createContext, useContext, useMemo, useState } from 'react';
+
+import { signIn as requestSignIn, setSessionToken } from '../services/schoolService';
 
 type AuthUser = {
   name: string;
@@ -22,24 +24,23 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isBootstrapping, setIsBootstrapping] = useState(true);
+  const [isBootstrapping] = useState(false);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsBootstrapping(false);
-    }, 420);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const signIn = async ({ email }: SignInPayload) => {
-    setUser({
-      name: 'Equipe Escolar',
+  const signIn = async ({ email, password }: SignInPayload) => {
+    const response = await requestSignIn({
       email: email.trim().toLowerCase(),
+      password,
+    });
+
+    setSessionToken(response.token);
+    setUser({
+      name: response.usuario.nome,
+      email: response.usuario.email,
     });
   };
 
   const signOut = () => {
+    setSessionToken(null);
     setUser(null);
   };
 

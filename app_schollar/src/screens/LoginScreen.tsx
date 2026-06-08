@@ -27,6 +27,8 @@ export function LoginScreen() {
 
     try {
       await signIn({ email, password });
+    } catch (error) {
+      Alert.alert('Falha no login', error instanceof Error ? error.message : 'Não foi possível autenticar no momento.');
     } finally {
       setIsSubmitting(false);
     }

@@ -1,4 +1,6 @@
-const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+import Constants from 'expo-constants';
+
+const apiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl ?? 'http://localhost:3000/api';
 
 export type DashboardSummary = {
   greetings: string;
@@ -22,54 +24,147 @@ export type BulletinData = {
   subjects: SubjectGrade[];
 };
 
-export async function fetchDashboardSummary(name = 'Equipe Escolar'): Promise<DashboardSummary> {
-  await delay(320);
+export type LoginResponse = {
+  token: string;
+  usuario: {
+    id: number;
+    nome: string;
+    email: string;
+    perfil: string;
+  };
+};
 
+export type AuthenticatedPayload = {
+  email: string;
+  password: string;
+};
+
+let sessionToken: string | null = null;
+
+export function setSessionToken(token: string | null) {
+  sessionToken = token;
+}
+
+function buildHeaders(extraHeaders: HeadersInit = {}) {
   return {
-    greetings: `Painel rápido para organizar o dia de ${name}.`,
-    stats: [
-      { label: 'Alunos ativos', value: '248' },
-      { label: 'Professores', value: '18' },
-      { label: 'Disciplinas', value: '12' },
-      { label: 'Boletins', value: '36' },
-    ],
-    schedule: [
-      { time: '07:30', title: 'Boas-vindas e conferência de turma', meta: 'Recepção | Bloco A' },
-      { time: '10:00', title: 'Reunião de coordenação', meta: 'Sala da direção' },
-      { time: '14:00', title: 'Atualização de notas parciais', meta: 'Sistema acadêmico' },
-    ],
-    announcements: [
-      { title: 'Nova turma aberta', text: 'A turma 8A já pode receber alunos para o próximo ciclo.' },
-      { title: 'Plantão de dúvidas', text: 'Professores terão suporte de cadastro entre 15h e 17h.' },
-    ],
+    'Content-Type': 'application/json',
+    ...(sessionToken ? { Authorization: `Bearer ${sessionToken}` } : {}),
+    ...extraHeaders,
   };
 }
 
-export async function fetchBulletin(): Promise<BulletinData> {
-  await delay(420);
+function parseInteger(value: string | number | null | undefined, fallback = 0) {
+  if (value === null || value === undefined || value === '') {
+    return fallback;
+  }
+
+  const parsed = Number.parseInt(String(value).replace(/\D/g, ''), 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`, {
+    ...options,
+    headers: buildHeaders(options.headers),
+  });
+
+  const rawBody = await response.text();
+  const body = rawBody ? JSON.parse(rawBody) : null;
+
+  if (!response.ok) {
+    throw new Error(body?.message || 'Falha ao comunicar com o servidor.');
+  }
+
+  return body as T;
+}
+
+export async function signIn(payload: AuthenticatedPayload): Promise<LoginResponse> {
+  return request<LoginResponse>('/login', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function fetchDashboardSummary(name = 'Equipe Escolar'): Promise<DashboardSummary> {
+  return request<DashboardSummary>(`/dashboard?nome=${encodeURIComponent(name)}`);
+}
+
+export async function fetchBulletin(matricula = '2024001'): Promise<BulletinData> {
+  const response = await request<{
+    aluno: string;
+    matricula: string;
+    curso: string;
+    disciplinas: Array<{ disciplina: string; nota1: number; nota2: number; media: number; situacao: string }>;
+  }>(`/boletim/${encodeURIComponent(matricula)}`);
+
+  const medias = response.disciplinas.map((item) => item.media);
+  const average = medias.length ? medias.reduce((sum, current) => sum + current, 0) / medias.length : 0;
 
   return {
-    studentName: 'Ana Clara dos Santos',
-    className: '8A - Ensino Fundamental',
-    average: 8.7,
-    attendance: '96%',
-    status: 'Aprovada',
-    subjects: [
-      { subject: 'Matemática', grade: 9.2, attendance: '98%' },
-      { subject: 'Português', grade: 8.4, attendance: '97%' },
-      { subject: 'Ciências', grade: 8.8, attendance: '95%' },
-      { subject: 'História', grade: 8.1, attendance: '95%' },
-      { subject: 'Artes', grade: 9.0, attendance: '100%' },
-    ],
+    studentName: response.aluno,
+    className: response.curso,
+    average,
+    attendance: '100%',
+    status: response.disciplinas.some((item) => item.situacao === 'Reprovado') ? 'Em recuperação' : 'Aprovado',
+    subjects: response.disciplinas.map((item) => ({
+      subject: item.disciplina,
+      grade: item.media,
+      attendance: '100%',
+    })),
+  };
+}
+
+function buildAcademicPayload(entity: string, payload: Record<string, string>) {
+  if (entity === 'Aluno') {
+    return {
+      nome: payload.nome,
+      matricula: payload.matricula,
+      curso: payload.turma || 'Não informado',
+      email: payload.email || null,
+      telefone: payload.telefone || null,
+      cep: payload.cep || null,
+      endereco: payload.endereco || null,
+      cidade: payload.cidade || null,
+      estado: payload.estado || null,
+    };
+  }
+
+  if (entity === 'Professor') {
+    return {
+      nome: payload.nome,
+      titulacao: payload.especialidade || 'Não informado',
+      area: payload.especialidade || 'Não informado',
+      tempo_docencia: parseInteger(payload.tempo_docencia, 0),
+      email: payload.email,
+    };
+  }
+
+  return {
+    nome: payload.nome,
+    carga_horaria: parseInteger(payload.cargaHoraria || payload.carga_horaria, 0),
+    professor_id: payload.professor_id ? Number(payload.professor_id) : null,
+    curso: payload.turma || 'Não informado',
+    semestre: parseInteger(payload.semestre, 1),
   };
 }
 
 export async function persistRegistration(entity: string, payload: Record<string, string>) {
-  await delay(500);
+  const route = entity === 'Aluno' ? '/alunos' : entity === 'Professor' ? '/professores' : '/disciplinas';
 
-  return {
-    entity,
-    payload,
-    savedAt: new Date().toISOString(),
-  };
+  return request<{ message: string; aluno?: unknown; professor?: unknown; disciplina?: unknown }>(route, {
+    method: 'POST',
+    body: JSON.stringify(buildAcademicPayload(entity, payload)),
+  });
+}
+
+export async function lookupCep(cep: string) {
+  return request<{ cep: string; endereco: string; cidade: string; estado: string }>(`/viacep/${encodeURIComponent(cep)}`);
+}
+
+export async function fetchStates() {
+  return request<{ estados: Array<{ id: number; nome: string; sigla: string }> }>('/ibge/estados');
+}
+
+export async function fetchCities(uf: string) {
+  return request<{ cidades: Array<{ id: number; nome: string }> }>(`/ibge/estados/${encodeURIComponent(uf)}/cidades`);
 }
