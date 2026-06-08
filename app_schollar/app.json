@@ -41,6 +41,9 @@
     ],
     "experiments": {
       "reactCompiler": true
+    },
+    "extra": {
+      "apiBaseUrl": "https://seu-servidor.com/api"
     }
   }
 }

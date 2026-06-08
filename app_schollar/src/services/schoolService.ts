@@ -1,12 +1,30 @@
 import Constants from 'expo-constants';
 
-const apiBaseUrl = Constants.expoConfig?.extra?.apiBaseUrl ?? 'http://localhost:3000/api';
+const defaultApiBaseUrl = 'http://localhost:3000/api';
+
+function normalizeApiBaseUrl(value: string | null | undefined) {
+  if (!value) {
+    return defaultApiBaseUrl;
+  }
+
+  const trimmed = value.trim().replace(/\/+$/, '');
+
+  if (trimmed.endsWith('/api')) {
+    return trimmed;
+  }
+
+  return `${trimmed}/api`;
+}
+
+const apiBaseUrl = normalizeApiBaseUrl(
+  process.env.EXPO_PUBLIC_API_BASE_URL ?? Constants.expoConfig?.extra?.apiBaseUrl
+);
 
 export type DashboardSummary = {
   greetings: string;
-  stats: Array<{ label: string; value: string }>;
-  schedule: Array<{ time: string; title: string; meta: string }>;
-  announcements: Array<{ title: string; text: string }>;
+  stats: { label: string; value: string }[];
+  schedule: { time: string; title: string; meta: string }[];
+  announcements: { title: string; text: string }[];
 };
 
 export type SubjectGrade = {
@@ -94,7 +112,7 @@ export async function fetchBulletin(matricula = '2024001'): Promise<BulletinData
     aluno: string;
     matricula: string;
     curso: string;
-    disciplinas: Array<{ disciplina: string; nota1: number; nota2: number; media: number; situacao: string }>;
+    disciplinas: { disciplina: string; nota1: number; nota2: number; media: number; situacao: string }[];
   }>(`/boletim/${encodeURIComponent(matricula)}`);
 
   const medias = response.disciplinas.map((item) => item.media);
@@ -162,9 +180,9 @@ export async function lookupCep(cep: string) {
 }
 
 export async function fetchStates() {
-  return request<{ estados: Array<{ id: number; nome: string; sigla: string }> }>('/ibge/estados');
+  return request<{ estados: { id: number; nome: string; sigla: string }[] }>('/ibge/estados');
 }
 
 export async function fetchCities(uf: string) {
-  return request<{ cidades: Array<{ id: number; nome: string }> }>(`/ibge/estados/${encodeURIComponent(uf)}/cidades`);
+  return request<{ cidades: { id: number; nome: string }[] }>(`/ibge/estados/${encodeURIComponent(uf)}/cidades`);
 }
