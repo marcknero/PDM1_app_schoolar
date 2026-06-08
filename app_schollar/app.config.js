@@ -22,6 +22,9 @@ module.exports = () => ({
       apiBaseUrl: normalizeApiBaseUrl(
         process.env.EXPO_PUBLIC_API_BASE_URL || appJson.expo.extra?.apiBaseUrl
       ),
+      eas: {
+        projectId: 'bcfa24d7-1133-4b08-a764-fe8acd60fd05',
+      },
     },
   },
 });

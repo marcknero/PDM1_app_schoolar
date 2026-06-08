@@ -14,7 +14,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://SUBSTITUA-PELA-URL-DO-RENDER.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://app-schollar-api.onrender.com"
       }
     },
     "production": {
@@ -22,7 +22,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://SUBSTITUA-PELA-URL-DO-RENDER.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://app-schollar-api.onrender.com"
       }
     }
   },
