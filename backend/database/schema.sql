@@ -9,7 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-ALTER TABLE users ADD CONSTRAINT check_perfil CHECK (perfil IN ('coordenacao', 'professor', 'aluno'));
+ALTER TABLE users DROP CONSTRAINT IF EXISTS check_perfil;
+ALTER TABLE users ADD CONSTRAINT check_perfil CHECK (perfil IN ('aluno', 'professor', 'admin')); -- ajuste com seus perfis reais
 
 CREATE TABLE IF NOT EXISTS professores (
   id SERIAL PRIMARY KEY,
