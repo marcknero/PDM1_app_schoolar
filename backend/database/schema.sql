@@ -10,7 +10,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 ALTER TABLE users DROP CONSTRAINT IF EXISTS check_perfil;
-ALTER TABLE users ADD CONSTRAINT check_perfil CHECK (perfil IN ('aluno', 'professor', 'admin')); -- ajuste com seus perfis reais
+
+ALTER TABLE users 
+ADD CONSTRAINT check_perfil CHECK (perfil IN ('admin', 'user')) NOT VALID;
 
 CREATE TABLE IF NOT EXISTS professores (
   id SERIAL PRIMARY KEY,
