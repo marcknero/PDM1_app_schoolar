@@ -13,3 +13,7 @@ O servidor foi desenvolvido na pasta backend [servidor_configDB](./backend/)
 Apk disponivel para download e teste no seguinte link
 [https://app-schollar-api.onrender.com/](https://app-schollar-api.onrender.com/)
 
+
+Link para apresentação video para avaliação do professor
+[https://youtu.be/JDAwDqxGS2A](https://youtu.be/JDAwDqxGS2A)
+
