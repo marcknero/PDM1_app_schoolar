@@ -3,8 +3,10 @@ import React, { ReactNode, createContext, useContext, useMemo, useState } from '
 import { signIn as requestSignIn, setSessionToken } from '../services/schoolService';
 
 type AuthUser = {
+  id: string;
   name: string;
   email: string;
+  perfil: 'coordenacao' | 'professor' | 'aluno';
 };
 
 type SignInPayload = {
@@ -34,8 +36,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setSessionToken(response.token);
     setUser({
+      id: String(response.usuario.id),
       name: response.usuario.nome,
       email: response.usuario.email,
+      perfil: response.usuario.perfil,
     });
   };
 

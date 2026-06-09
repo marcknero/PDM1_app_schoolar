@@ -9,8 +9,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { HomeScreen } from '../screens/HomeScreen';
 import { LoginScreen } from '../screens/LoginScreen';
 import { ReportScreen } from '../screens/ReportScreen';
+import { StudentGradesScreen } from '../screens/StudentGradesScreen';
 import { StudentRegistrationScreen } from '../screens/StudentRegistrationScreen';
 import { SubjectRegistrationScreen } from '../screens/SubjectRegistrationScreen';
+import { TeacherGradesScreen } from '../screens/TeacherGradesScreen';
 import { TeacherRegistrationScreen } from '../screens/TeacherRegistrationScreen';
 import { colors, navigationTheme, spacing } from '../styles/theme';
 import { MainTabParamList, RootStackParamList } from './types';
@@ -35,6 +37,18 @@ function LoadingScreen() {
 }
 
 function MainTabs() {
+  const { user } = useAuth();
+
+  const icons: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
+    Home: 'grid-outline',
+    Students: 'school-outline',
+    Teachers: 'people-outline',
+    Subjects: 'book-outline',
+    Report: 'bar-chart-outline',
+    TeacherGrades: 'create-outline',
+    StudentGrades: 'document-text-outline',
+  };
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -53,22 +67,32 @@ function MainTabs() {
           fontWeight: '700',
         },
         tabBarIcon: ({ color, size }) => {
-          const icons: Record<keyof MainTabParamList, keyof typeof Ionicons.glyphMap> = {
-            Home: 'grid-outline',
-            Students: 'school-outline',
-            Teachers: 'people-outline',
-            Subjects: 'book-outline',
-            Report: 'bar-chart-outline',
-          };
-
           return <Ionicons name={icons[route.name as keyof MainTabParamList]} size={size} color={color} />;
         },
       })}>
       <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Início' }} />
-      <Tab.Screen name="Students" component={StudentRegistrationScreen} options={{ title: 'Alunos' }} />
-      <Tab.Screen name="Teachers" component={TeacherRegistrationScreen} options={{ title: 'Professores' }} />
-      <Tab.Screen name="Subjects" component={SubjectRegistrationScreen} options={{ title: 'Disciplinas' }} />
-      <Tab.Screen name="Report" component={ReportScreen} options={{ title: 'Boletim' }} />
+
+      {user?.perfil === 'coordenacao' && (
+        <>
+          <Tab.Screen name="Students" component={StudentRegistrationScreen} options={{ title: 'Alunos' }} />
+          <Tab.Screen name="Teachers" component={TeacherRegistrationScreen} options={{ title: 'Professores' }} />
+          <Tab.Screen name="Subjects" component={SubjectRegistrationScreen} options={{ title: 'Disciplinas' }} />
+          <Tab.Screen name="Report" component={ReportScreen} options={{ title: 'Boletim' }} />
+        </>
+      )}
+
+      {user?.perfil === 'professor' && (
+        <>
+          <Tab.Screen name="TeacherGrades" component={TeacherGradesScreen} options={{ title: 'Notas' }} />
+          <Tab.Screen name="Subjects" component={SubjectRegistrationScreen} options={{ title: 'Disciplinas' }} />
+        </>
+      )}
+
+      {user?.perfil === 'aluno' && (
+        <>
+          <Tab.Screen name="StudentGrades" component={StudentGradesScreen} options={{ title: 'Minhas Notas' }} />
+        </>
+      )}
     </Tab.Navigator>
   );
 }

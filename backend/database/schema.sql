@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS users (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE users ADD CONSTRAINT check_perfil CHECK (perfil IN ('coordenacao', 'professor', 'aluno'));
+
 CREATE TABLE IF NOT EXISTS professores (
   id SERIAL PRIMARY KEY,
   nome VARCHAR(120) NOT NULL,
@@ -16,6 +18,7 @@ CREATE TABLE IF NOT EXISTS professores (
   area VARCHAR(120) NOT NULL,
   tempo_docencia INTEGER NOT NULL DEFAULT 0,
   email VARCHAR(160) NOT NULL UNIQUE,
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -30,6 +33,7 @@ CREATE TABLE IF NOT EXISTS alunos (
   endereco VARCHAR(180),
   cidade VARCHAR(120),
   estado VARCHAR(80),
+  user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 

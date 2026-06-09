@@ -4,6 +4,8 @@ export type MainTabParamList = {
   Teachers: undefined;
   Subjects: undefined;
   Report: undefined;
+  TeacherGrades: undefined;
+  StudentGrades: undefined;
 };
 
 export type RootStackParamList = {

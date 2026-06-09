@@ -80,7 +80,7 @@ function parseInteger(value: string | number | null | undefined, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...options,
     headers: buildHeaders(options.headers),

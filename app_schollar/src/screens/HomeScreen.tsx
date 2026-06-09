@@ -23,7 +23,7 @@ export function HomeScreen({ navigation }: Props) {
     let mounted = true;
 
     const loadSummary = async () => {
-      const data = await fetchDashboardSummary(user?.name ?? 'Equipe Escolar');
+      const data = await fetchDashboardSummary(user?.name ?? 'Usuário');
 
       if (mounted) {
         setSummary(data);
@@ -38,57 +38,112 @@ export function HomeScreen({ navigation }: Props) {
     };
   }, [user?.name]);
 
+  const getRoleTitle = () => {
+    switch (user?.perfil) {
+      case 'coordenacao':
+        return 'Equipe Escolar';
+      case 'professor':
+        return 'Professor';
+      case 'aluno':
+        return 'Aluno';
+      default:
+        return 'Usuário';
+    }
+  };
+
+  const getQuickActions = () => {
+    switch (user?.perfil) {
+      case 'coordenacao':
+        return (
+          <>
+            <PrimaryButton label="Cadastrar aluno" onPress={() => navigation.navigate('Students')} style={homeStyles.quickAction} />
+            <PrimaryButton label="Cadastrar professor" onPress={() => navigation.navigate('Teachers')} style={homeStyles.quickAction} />
+            <PrimaryButton label="Cadastrar disciplina" onPress={() => navigation.navigate('Subjects')} style={homeStyles.quickAction} />
+            <PrimaryButton label="Ver boletim" onPress={() => navigation.navigate('Report')} style={homeStyles.quickAction} />
+          </>
+        );
+      case 'professor':
+        return (
+          <>
+            <PrimaryButton label="Lançar notas" onPress={() => navigation.navigate('TeacherGrades')} style={homeStyles.quickAction} />
+            <PrimaryButton label="Minhas disciplinas" onPress={() => navigation.navigate('Subjects')} style={homeStyles.quickAction} />
+          </>
+        );
+      case 'aluno':
+        return (
+          <>
+            <PrimaryButton label="Ver minhas notas" onPress={() => navigation.navigate('StudentGrades')} style={homeStyles.quickAction} />
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <ScreenFrame
       tag="Painel inicial"
-      title={`Olá, ${user?.name ?? 'coordenador'}`}
-      subtitle={summary?.greetings ?? 'Carregando visão geral da escola...'}>
+      title={`Olá, ${user?.name ?? getRoleTitle()}`}
+      subtitle={summary?.greetings ?? 'Carregando visão geral...'}>
       <View style={componentStyles.card}>
-        <Text style={componentStyles.cardTitle}>Resumo rápido</Text>
-        <View style={componentStyles.rowWrap}>
-          {summary?.stats.map((item) => (
-            <StatTile key={item.label} value={item.value} label={item.label} />
-          )) ?? (
-            <View style={componentStyles.emptyState}>
-              <Text style={componentStyles.emptyStateTitle}>{isLoading ? 'Atualizando dados...' : 'Sem dados disponíveis'}</Text>
-              <Text style={componentStyles.emptyStateText}>
-                A visão geral será exibida assim que a sincronização local terminar.
-              </Text>
-            </View>
-          )}
+        <Text style={componentStyles.cardTitle}>Perfil</Text>
+        <View style={componentStyles.emptyState}>
+          <Text style={componentStyles.emptyStateTitle}>{getRoleTitle()}</Text>
+          <Text style={componentStyles.emptyStateText}>
+            {user?.perfil === 'coordenacao' && 'Acesso total ao sistema de gestão escolar'}
+            {user?.perfil === 'professor' && 'Gestão de disciplinas e lançamento de notas'}
+            {user?.perfil === 'aluno' && 'Visualização de notas e boletins'}
+          </Text>
         </View>
       </View>
+
+      {user?.perfil === 'coordenacao' && (
+        <View style={componentStyles.card}>
+          <Text style={componentStyles.cardTitle}>Resumo rápido</Text>
+          <View style={componentStyles.rowWrap}>
+            {summary?.stats.map((item) => (
+              <StatTile key={item.label} value={item.value} label={item.label} />
+            )) ?? (
+              <View style={componentStyles.emptyState}>
+                <Text style={componentStyles.emptyStateTitle}>{isLoading ? 'Atualizando dados...' : 'Sem dados disponíveis'}</Text>
+                <Text style={componentStyles.emptyStateText}>
+                  A visão geral será exibida assim que a sincronização local terminar.
+                </Text>
+              </View>
+            )}
+          </View>
+        </View>
+      )}
 
       <View style={componentStyles.card}>
         <Text style={componentStyles.cardTitle}>Ações rápidas</Text>
-        <View style={homeStyles.quickActionList}>
-          <PrimaryButton label="Cadastrar aluno" onPress={() => navigation.navigate('Students')} style={homeStyles.quickAction} />
-          <PrimaryButton label="Cadastrar professor" onPress={() => navigation.navigate('Teachers')} style={homeStyles.quickAction} />
-          <PrimaryButton label="Cadastrar disciplina" onPress={() => navigation.navigate('Subjects')} style={homeStyles.quickAction} />
-          <PrimaryButton label="Ver boletim" onPress={() => navigation.navigate('Report')} style={homeStyles.quickAction} />
-        </View>
+        <View style={homeStyles.quickActionList}>{getQuickActions()}</View>
       </View>
 
-      <View style={componentStyles.card}>
-        <Text style={componentStyles.cardTitle}>Agenda do dia</Text>
-        {summary?.schedule.map((item) => (
-          <View key={item.time} style={homeStyles.scheduleItem}>
-            <Text style={homeStyles.scheduleTime}>{item.time}</Text>
-            <Text style={homeStyles.scheduleTitle}>{item.title}</Text>
-            <Text style={homeStyles.scheduleMeta}>{item.meta}</Text>
+      {user?.perfil === 'coordenacao' && (
+        <>
+          <View style={componentStyles.card}>
+            <Text style={componentStyles.cardTitle}>Agenda do dia</Text>
+            {summary?.schedule.map((item) => (
+              <View key={item.time} style={homeStyles.scheduleItem}>
+                <Text style={homeStyles.scheduleTime}>{item.time}</Text>
+                <Text style={homeStyles.scheduleTitle}>{item.title}</Text>
+                <Text style={homeStyles.scheduleMeta}>{item.meta}</Text>
+              </View>
+            ))}
           </View>
-        ))}
-      </View>
 
-      <View style={componentStyles.card}>
-        <Text style={componentStyles.cardTitle}>Avisos importantes</Text>
-        {summary?.announcements.map((item) => (
-          <View key={item.title} style={homeStyles.announcementItem}>
-            <Text style={homeStyles.announcementTitle}>{item.title}</Text>
-            <Text style={homeStyles.announcementText}>{item.text}</Text>
+          <View style={componentStyles.card}>
+            <Text style={componentStyles.cardTitle}>Avisos importantes</Text>
+            {summary?.announcements.map((item) => (
+              <View key={item.title} style={homeStyles.announcementItem}>
+                <Text style={homeStyles.announcementTitle}>{item.title}</Text>
+                <Text style={homeStyles.announcementText}>{item.text}</Text>
+              </View>
+            ))}
           </View>
-        ))}
-      </View>
+        </>
+      )}
 
       <PrimaryButton
         label="Sair do sistema"
