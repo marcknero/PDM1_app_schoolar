@@ -1,8 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { findUserByEmail, createUser, linkUserToStudent, linkUserToTeacher } = require('../models/userModel');
-const { findStudentByMatricula } = require('../models/studentModel');
-const { findTeacherById } = require('../models/teacherModel');
+const { findStudentByMatricula, findStudentByUserId } = require('../models/studentModel');
+const { findTeacherById, findTeacherByUserId } = require('../models/teacherModel');
 
 async function login(req, res) {
   const { email, password } = req.body || {};
@@ -84,7 +84,53 @@ async function register(req, res) {
   });
 }
 
+async function me(req, res) {
+  const usuario = {
+    id: req.user.sub,
+    nome: req.user.nome,
+    email: req.user.email,
+    perfil: req.user.perfil,
+  };
+
+  if (req.user.perfil === 'aluno') {
+    const aluno = await findStudentByUserId(req.user.sub);
+
+    return res.json({
+      usuario,
+      aluno: aluno
+        ? {
+            id: aluno.id,
+            nome: aluno.nome,
+            matricula: aluno.matricula,
+            curso: aluno.curso,
+            email: aluno.email,
+          }
+        : null,
+    });
+  }
+
+  if (req.user.perfil === 'professor') {
+    const professor = await findTeacherByUserId(req.user.sub);
+
+    return res.json({
+      usuario,
+      professor: professor
+        ? {
+            id: professor.id,
+            nome: professor.nome,
+            titulacao: professor.titulacao,
+            area: professor.area,
+            email: professor.email,
+          }
+        : null,
+    });
+  }
+
+  return res.json({ usuario });
+}
+
 module.exports = {
   login,
   register,
+  me,
 };

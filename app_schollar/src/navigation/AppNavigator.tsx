@@ -82,14 +82,12 @@ function MainTabs() {
       )}
 
       {user?.perfil === 'professor' && (
-        <>
-          <Tab.Screen name="TeacherGrades" component={TeacherGradesScreen} options={{ title: 'Notas' }} />
-          <Tab.Screen name="Subjects" component={SubjectRegistrationScreen} options={{ title: 'Disciplinas' }} />
-        </>
+        <Tab.Screen name="TeacherGrades" component={TeacherGradesScreen} options={{ title: 'Notas' }} />
       )}
 
       {user?.perfil === 'aluno' && (
         <>
+          <Tab.Screen name="Subjects" component={SubjectRegistrationScreen} options={{ title: 'Disciplinas' }} />
           <Tab.Screen name="StudentGrades" component={StudentGradesScreen} options={{ title: 'Minhas Notas' }} />
         </>
       )}

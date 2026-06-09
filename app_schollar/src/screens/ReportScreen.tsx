@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { Alert, Text, View } from 'react-native';
 
+import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenFrame } from '../components/ScreenFrame';
+import { TextField } from '../components/TextField';
 import { BulletinData, fetchBulletin } from '../services/schoolService';
 import { componentStyles } from '../styles/components.styles';
 import { formStyles } from '../styles/form.styles';
@@ -9,33 +11,42 @@ import { reportStyles } from '../styles/report.styles';
 
 export function ReportScreen() {
   const [report, setReport] = useState<BulletinData | null>(null);
+  const [matricula, setMatricula] = useState('2024001');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
-    const loadReport = async () => {
-      const data = await fetchBulletin();
-
-      if (mounted) {
-        setReport(data);
-      }
-    };
-
-    loadReport();
-
-    return () => {
-      mounted = false;
-    };
+    loadReport('2024001');
   }, []);
+
+  const loadReport = async (value: string) => {
+    try {
+      setIsLoading(true);
+      const data = await fetchBulletin(value);
+      setReport(data);
+    } catch (error) {
+      setReport(null);
+      Alert.alert('Erro', 'Não foi possível carregar o boletim informado.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <ScreenFrame
       tag="Desempenho"
       title="Visualização de boletim"
-      subtitle="Resumo acadêmico com notas, frequência e um painel limpo para análise rápida.">
+      subtitle="Busque um aluno pela matrícula para acompanhar notas, frequência e situação.">
+      <View style={componentStyles.card}>
+        <Text style={componentStyles.cardTitle}>Consultar boletim</Text>
+        <View style={formStyles.grid}>
+          <TextField label="Matrícula" value={matricula} onChangeText={setMatricula} placeholder="000000" keyboardType="number-pad" />
+          <PrimaryButton label={isLoading ? 'Carregando...' : 'Carregar boletim'} onPress={() => loadReport(matricula)} disabled={isLoading} />
+        </View>
+      </View>
+
       <View style={reportStyles.reportHero}>
-        <Text style={reportStyles.reportHeroTitle}>{report?.studentName ?? 'Carregando boletim...'}</Text>
-        <Text style={reportStyles.reportHeroText}>{report?.className ?? 'Buscando dados do estudante e da turma.'}</Text>
+        <Text style={reportStyles.reportHeroTitle}>{report?.studentName ?? (isLoading ? 'Carregando boletim...' : 'Nenhum boletim carregado')}</Text>
+        <Text style={reportStyles.reportHeroText}>{report?.className ?? 'Busque um estudante para visualizar os dados acadêmicos.'}</Text>
       </View>
 
       <View style={componentStyles.rowWrap}>
@@ -80,8 +91,8 @@ export function ReportScreen() {
             );
           }) ?? (
             <View style={componentStyles.emptyState}>
-              <Text style={componentStyles.emptyStateTitle}>Carregando boletim...</Text>
-              <Text style={componentStyles.emptyStateText}>Os dados chegam em instantes para a análise do desempenho.</Text>
+              <Text style={componentStyles.emptyStateTitle}>{isLoading ? 'Carregando boletim...' : 'Nenhum boletim encontrado'}</Text>
+              <Text style={componentStyles.emptyStateText}>{isLoading ? 'Os dados chegam em instantes para a análise do desempenho.' : 'Informe uma matrícula válida para localizar o aluno.'}</Text>
             </View>
           )}
         </View>

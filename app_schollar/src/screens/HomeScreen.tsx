@@ -23,11 +23,16 @@ export function HomeScreen({ navigation }: Props) {
     let mounted = true;
 
     const loadSummary = async () => {
-      const data = await fetchDashboardSummary(user?.name ?? 'Usuário');
+      try {
+        const data = await fetchDashboardSummary(user?.name ?? 'Usuário');
 
-      if (mounted) {
-        setSummary(data);
-        setIsLoading(false);
+        if (mounted) {
+          setSummary(data);
+        }
+      } finally {
+        if (mounted) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -66,12 +71,12 @@ export function HomeScreen({ navigation }: Props) {
         return (
           <>
             <PrimaryButton label="Lançar notas" onPress={() => navigation.navigate('TeacherGrades')} style={homeStyles.quickAction} />
-            <PrimaryButton label="Minhas disciplinas" onPress={() => navigation.navigate('Subjects')} style={homeStyles.quickAction} />
           </>
         );
       case 'aluno':
         return (
           <>
+            <PrimaryButton label="Minhas disciplinas" onPress={() => navigation.navigate('Subjects')} style={homeStyles.quickAction} />
             <PrimaryButton label="Ver minhas notas" onPress={() => navigation.navigate('StudentGrades')} style={homeStyles.quickAction} />
           </>
         );

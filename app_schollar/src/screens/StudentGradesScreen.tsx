@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, Text, View } from 'react-native';
 
 import { ScreenFrame } from '../components/ScreenFrame';
-import { useAuth } from '../contexts/AuthContext';
-import { request } from '../services/schoolService';
+import { fetchBulletinByAlunoId, fetchCurrentProfile } from '../services/schoolService';
 import { componentStyles } from '../styles/components.styles';
 import { formStyles } from '../styles/form.styles';
 
@@ -17,9 +16,10 @@ type SubjectGrade = {
 };
 
 export function StudentGradesScreen() {
-  const { user } = useAuth();
   const [grades, setGrades] = useState<SubjectGrade[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [studentName, setStudentName] = useState('');
+  const [className, setClassName] = useState('');
 
   useEffect(() => {
     loadGrades();
@@ -28,8 +28,18 @@ export function StudentGradesScreen() {
   const loadGrades = async () => {
     try {
       setIsLoading(true);
-      const data = await request<{ disciplinas: SubjectGrade[] }>('/boletim/aluno/1');
-      setGrades(data.disciplinas || []);
+      const profile = await fetchCurrentProfile();
+
+      if (!profile.aluno) {
+        setGrades([]);
+        return;
+      }
+
+      setStudentName(profile.aluno.nome);
+      setClassName(profile.aluno.curso);
+
+      const data = await fetchBulletinByAlunoId(profile.aluno.id);
+      setGrades(data || []);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar suas notas.');
     } finally {
@@ -77,6 +87,8 @@ export function StudentGradesScreen() {
     <ScreenFrame tag="Minhas Notas" title="Boletim" subtitle="Acompanhe seu desempenho acadêmico">
       <View style={componentStyles.card}>
         <Text style={componentStyles.cardTitle}>Resumo Geral</Text>
+        <Text style={formStyles.summaryText}>{studentName || 'Aluno autenticado'}</Text>
+        <Text style={formStyles.summaryText}>{className || 'Curso não informado'}</Text>
         <View style={componentStyles.rowWrap}>
           <View style={formStyles.summaryCard}>
             <Text style={formStyles.summaryTitle}>Média Geral</Text>

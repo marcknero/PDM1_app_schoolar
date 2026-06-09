@@ -4,31 +4,17 @@ import { Alert, FlatList, Text, View } from 'react-native';
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenFrame } from '../components/ScreenFrame';
 import { TextField } from '../components/TextField';
-import { useAuth } from '../contexts/AuthContext';
-import { request } from '../services/schoolService';
+import { fetchCurrentProfile, fetchGradesByProfessor, GradeRecord, request } from '../services/schoolService';
 import { componentStyles } from '../styles/components.styles';
 import { formStyles } from '../styles/form.styles';
 
-type Grade = {
-  id: number;
-  aluno_id: number;
-  aluno_nome: string;
-  matricula: string;
-  disciplina_id: number;
-  disciplina: string;
-  nota1: number;
-  nota2: number;
-  media: number;
-  situacao: string;
-};
-
 export function TeacherGradesScreen() {
-  const { user } = useAuth();
-  const [grades, setGrades] = useState<Grade[]>([]);
-  const [selectedGrade, setSelectedGrade] = useState<Grade | null>(null);
+  const [grades, setGrades] = useState<GradeRecord[]>([]);
+  const [selectedGrade, setSelectedGrade] = useState<GradeRecord | null>(null);
   const [nota1, setNota1] = useState('');
   const [nota2, setNota2] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [teacherName, setTeacherName] = useState('');
 
   useEffect(() => {
     loadGrades();
@@ -37,8 +23,16 @@ export function TeacherGradesScreen() {
   const loadGrades = async () => {
     try {
       setIsLoading(true);
-      const data = await request<{ notas: Grade[] }>('/notas/professor/1');
-      setGrades(data.notas || []);
+      const profile = await fetchCurrentProfile();
+
+      if (!profile.professor) {
+        setGrades([]);
+        return;
+      }
+
+      setTeacherName(profile.professor.nome);
+      const data = await fetchGradesByProfessor(profile.professor.id);
+      setGrades(data || []);
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar as notas.');
     } finally {
@@ -78,7 +72,7 @@ export function TeacherGradesScreen() {
     }
   };
 
-  const renderGradeItem = ({ item }: { item: Grade }) => (
+  const renderGradeItem = ({ item }: { item: GradeRecord }) => (
     <View style={componentStyles.card}>
       <Text style={componentStyles.cardTitle}>{item.aluno_nome}</Text>
       <Text style={formStyles.summaryText}>Matrícula: {item.matricula}</Text>
@@ -114,6 +108,11 @@ export function TeacherGradesScreen() {
 
   return (
     <ScreenFrame tag="Gestão de Notas" title="Lançar Notas" subtitle="Gerencie as notas dos seus alunos">
+      <View style={componentStyles.card}>
+        <Text style={componentStyles.cardTitle}>Professor autenticado</Text>
+        <Text style={formStyles.summaryText}>{teacherName || 'Carregando perfil...'}</Text>
+      </View>
+
       {selectedGrade && (
         <View style={componentStyles.card}>
           <Text style={componentStyles.cardTitle}>Editar Notas</Text>
