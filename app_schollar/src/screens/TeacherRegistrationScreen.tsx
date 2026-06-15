@@ -13,6 +13,7 @@ type TeacherFormState = {
   titulacao: string;
   area: string;
   email: string;
+  password?: string;
   tempo_docencia: string;
 };
 
@@ -21,6 +22,7 @@ const emptyForm: TeacherFormState = {
   titulacao: '',
   area: '',
   email: '',
+  password: '',
   tempo_docencia: '',
 };
 
@@ -59,6 +61,7 @@ export function TeacherRegistrationScreen() {
       titulacao: teacher.titulacao ?? '',
       area: teacher.area ?? '',
       email: teacher.email ?? '',
+      password: '',
       tempo_docencia: String(teacher.tempo_docencia ?? ''),
     });
   };
@@ -71,12 +74,18 @@ export function TeacherRegistrationScreen() {
 
     setIsSaving(true);
 
+    const payload = {
+      ...form,
+      tempo_docencia: parseInt(form.tempo_docencia, 10) || 0,
+      perfil: 'professor' // Garante que o backend saiba o tipo de usuário
+    };
+
     try {
       if (editingId) {
-        await updateRegistration('Professor', editingId, form);
+        await updateRegistration('Professor', editingId, payload);
         Alert.alert('Atualização realizada', 'Os dados do professor foram atualizados com sucesso.');
       } else {
-        await persistRegistration('Professor', form);
+        await persistRegistration('Professor', payload);
         Alert.alert('Cadastro realizado', 'O professor foi salvo com sucesso.');
       }
 
@@ -147,6 +156,15 @@ export function TeacherRegistrationScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
+          {!editingId && (
+            <TextField
+              label="Senha de acesso"
+              value={form.password}
+              onChangeText={(value) => setForm((current) => ({ ...current, password: value }))}
+              placeholder="Mínimo 6 caracteres"
+              secureTextEntry
+            />
+          )}
           <TextField label="Tempo de docência" value={form.tempo_docencia} onChangeText={(value) => setForm((current) => ({ ...current, tempo_docencia: value }))} placeholder="0" keyboardType="number-pad" />
         </View>
       </View>

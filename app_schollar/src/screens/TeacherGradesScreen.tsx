@@ -52,7 +52,7 @@ export function TeacherGradesScreen() {
     }
 
     try {
-      await request<{ message: string; nota: Grade }>('/notas', {
+      await request<{ message: string; nota: any }>('/notas', {
         method: 'POST',
         body: JSON.stringify({
           aluno_id: selectedGrade.aluno_id,
@@ -122,14 +122,14 @@ export function TeacherGradesScreen() {
             label="Nota 1"
             keyboardType="decimal-pad"
             value={nota1}
-            onChangeText={setNota1}
+            onChangeText={(v) => setNota1(v.replace(',', '.'))}
             placeholder="0.0 - 10.0"
           />
           <TextField
             label="Nota 2"
             keyboardType="decimal-pad"
             value={nota2}
-            onChangeText={setNota2}
+            onChangeText={(v) => setNota2(v.replace(',', '.'))}
             placeholder="0.0 - 10.0"
           />
           <View style={componentStyles.rowWrap}>
