@@ -10,8 +10,8 @@ const {
 async function create(req, res) {
   const body = req.body || {};
 
-  if (!body.nome || !body.titulacao || !body.area || !body.email) {
-    return res.status(400).json({ message: 'Nome, titulação, área e e-mail são obrigatórios.' });
+  if (!body.nome || !body.titulacao || !body.area || !body.email || !body.password) {
+    return res.status(400).json({ message: 'Nome, titulação, área, e-mail e senha são obrigatórios.' });
   }
 
   const created = await createTeacher(body);

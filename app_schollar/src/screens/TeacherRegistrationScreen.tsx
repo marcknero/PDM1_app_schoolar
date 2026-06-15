@@ -67,8 +67,9 @@ export function TeacherRegistrationScreen() {
   };
 
   const handleSave = async () => {
-    if (!form.nome.trim() || !form.titulacao.trim() || !form.area.trim() || !form.email.trim()) {
-      Alert.alert('Atenção', 'Nome, titulação, área e e-mail são obrigatórios para cadastrar o professor.');
+    const isNew = !editingId;
+    if (!form.nome.trim() || !form.titulacao.trim() || !form.area.trim() || !form.email.trim() || (isNew && !form.password?.trim())) {
+      Alert.alert('Atenção', 'Nome, titulação, área, e-mail e senha são obrigatórios para novos cadastros.');
       return;
     }
 

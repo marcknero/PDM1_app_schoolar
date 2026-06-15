@@ -79,8 +79,9 @@ export function StudentRegistrationScreen() {
   };
 
   const handleSave = async () => {
-    if (!form.nome.trim() || !form.matricula.trim() || !form.curso.trim()) {
-      Alert.alert('Atenção', 'Nome e matrícula são obrigatórios para cadastrar o aluno.');
+    const isNew = !editingId;
+    if (!form.nome.trim() || !form.matricula.trim() || !form.curso.trim() || (isNew && !form.password?.trim())) {
+      Alert.alert('Atenção', 'Nome, matrícula, curso e senha são obrigatórios para novos cadastros.');
       return;
     }
 
