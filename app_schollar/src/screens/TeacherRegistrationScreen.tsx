@@ -76,6 +76,7 @@ export function TeacherRegistrationScreen() {
 
     const payload = {
       ...form,
+      email: form.email.toLowerCase().trim(),
       tempo_docencia: parseInt(form.tempo_docencia, 10) || 0,
       perfil: 'professor' // Garante que o backend saiba o tipo de usuário
     };
@@ -156,15 +157,13 @@ export function TeacherRegistrationScreen() {
             keyboardType="email-address"
             autoCapitalize="none"
           />
-          {!editingId && (
-            <TextField
-              label="Senha de acesso"
-              value={form.password}
-              onChangeText={(value) => setForm((current) => ({ ...current, password: value }))}
-              placeholder="Mínimo 6 caracteres"
-              secureTextEntry
-            />
-          )}
+          <TextField
+            label={editingId ? "Alterar senha (opcional)" : "Senha de acesso"}
+            value={form.password}
+            onChangeText={(value) => setForm((current) => ({ ...current, password: value }))}
+            placeholder={editingId ? "Deixe vazio para manter a atual" : "Mínimo 6 caracteres"}
+            secureTextEntry
+          />
           <TextField label="Tempo de docência" value={form.tempo_docencia} onChangeText={(value) => setForm((current) => ({ ...current, tempo_docencia: value }))} placeholder="0" keyboardType="number-pad" />
         </View>
       </View>

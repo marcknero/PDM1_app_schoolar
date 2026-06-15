@@ -13,6 +13,7 @@ type StudentFormState = {
   matricula: string;
   curso: string;
   email: string;
+  password?: string;
   telefone: string;
   cep: string;
   endereco: string;
@@ -25,6 +26,7 @@ const emptyForm: StudentFormState = {
   matricula: '',
   curso: '',
   email: '',
+  password: '',
   telefone: '',
   cep: '',
   endereco: '',
@@ -67,6 +69,7 @@ export function StudentRegistrationScreen() {
       matricula: student.matricula ?? '',
       curso: student.curso ?? '',
       email: student.email ?? '',
+      password: '',
       telefone: student.telefone ?? '',
       cep: student.cep ?? '',
       endereco: student.endereco ?? '',
@@ -83,12 +86,18 @@ export function StudentRegistrationScreen() {
 
     setIsSaving(true);
 
+    const payload = {
+      ...form,
+      email: form.email.toLowerCase().trim(),
+      perfil: 'aluno'
+    };
+
     try {
       if (editingId) {
-        await updateRegistration('Aluno', editingId, form);
+        await updateRegistration('Aluno', editingId, payload);
         Alert.alert('Atualização realizada', 'Os dados do aluno foram atualizados com sucesso.');
       } else {
-        await persistRegistration('Aluno', form);
+        await persistRegistration('Aluno', payload);
         Alert.alert('Cadastro realizado', 'O aluno foi salvo com sucesso.');
       }
 
@@ -159,6 +168,14 @@ export function StudentRegistrationScreen() {
               <TextField label="Telefone" value={form.telefone} onChangeText={(value) => setForm((current) => ({ ...current, telefone: value }))} placeholder="(11) 99999-9999" keyboardType="phone-pad" />
             </View>
           </View>
+          <TextField
+            label={editingId ? "Alterar senha (opcional)" : "Senha de acesso"}
+            value={form.password}
+            onChangeText={(value) => setForm((current) => ({ ...current, password: value }))}
+            placeholder={editingId ? "Deixe vazio para manter a atual" : "Defina uma senha de acesso"}
+            secureTextEntry
+            autoCapitalize="none"
+          />
           <View style={formStyles.dualRow}>
             <View style={{ flex: 1 }}>
               <TextField label="CEP" value={form.cep} onChangeText={(value) => setForm((current) => ({ ...current, cep: value }))} placeholder="00000-000" keyboardType="number-pad" />
