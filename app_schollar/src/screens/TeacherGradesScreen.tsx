@@ -1,42 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { Alert, FlatList, Text, View } from 'react-native';
+import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
 
 import { PrimaryButton } from '../components/PrimaryButton';
 import { ScreenFrame } from '../components/ScreenFrame';
 import { TextField } from '../components/TextField';
-import { fetchCurrentProfile, fetchGradesByProfessor, GradeRecord, request } from '../services/schoolService';
+import { fetchCurrentProfile, fetchGradesBySubject, fetchSubjectsByProfessor, GradeRecord, request, SubjectRecord } from '../services/schoolService';
 import { componentStyles } from '../styles/components.styles';
 import { formStyles } from '../styles/form.styles';
 
 export function TeacherGradesScreen() {
   const [grades, setGrades] = useState<GradeRecord[]>([]);
+  const [subjects, setSubjects] = useState<SubjectRecord[]>([]);
+  const [selectedSubjectId, setSelectedSubjectId] = useState<number | null>(null);
   const [selectedGrade, setSelectedGrade] = useState<GradeRecord | null>(null);
   const [nota1, setNota1] = useState('');
   const [nota2, setNota2] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [teacherName, setTeacherName] = useState('');
+  const [teacherId, setTeacherId] = useState<number | null>(null);
 
   useEffect(() => {
-    loadGrades();
+    loadInitialData();
   }, []);
 
-  const loadGrades = async () => {
+  const loadInitialData = async () => {
     try {
       setIsLoading(true);
       const profile = await fetchCurrentProfile();
 
       if (!profile.professor) {
-        setGrades([]);
+        setSubjects([]);
         return;
       }
 
       setTeacherName(profile.professor.nome);
-      const data = await fetchGradesByProfessor(profile.professor.id);
-      setGrades(data || []);
+      setTeacherId(profile.professor.id);
+      
+      // Busca as disciplinas ministradas por este professor
+      const subjectData = await fetchSubjectsByProfessor(profile.professor.id);
+      setSubjects(subjectData || []);
+
+      if (selectedSubjectId) {
+        await loadGradesForSubject(selectedSubjectId);
+      }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível carregar as notas.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadGradesForSubject = async (subjectId: number) => {
+    try {
+      setIsRefreshing(true);
+      const data = await fetchGradesBySubject(subjectId);
+      setGrades(data || []);
+      setSelectedSubjectId(subjectId);
+    } catch (error) {
+      Alert.alert('Erro', 'Não foi possível carregar os alunos desta disciplina.');
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -66,7 +90,10 @@ export function TeacherGradesScreen() {
       setSelectedGrade(null);
       setNota1('');
       setNota2('');
-      loadGrades();
+      
+      if (selectedSubjectId) {
+        await loadGradesForSubject(selectedSubjectId);
+      }
     } catch (error) {
       Alert.alert('Erro', 'Não foi possível salvar as notas.');
     }
@@ -104,6 +131,17 @@ export function TeacherGradesScreen() {
         }}
       />
     </View>
+  );
+
+  const renderSubjectItem = ({ item }: { item: SubjectRecord }) => (
+    <TouchableOpacity 
+      style={[componentStyles.card, selectedSubjectId === item.id && { borderColor: '#2E7D32', borderWidth: 2 }]}
+      onPress={() => loadGradesForSubject(item.id)}
+    >
+      <Text style={componentStyles.cardTitle}>{item.nome}</Text>
+      <Text style={formStyles.summaryText}>{item.curso} - {item.semestre}º Semestre</Text>
+      <Text style={formStyles.summaryText}>Carga horária: {item.carga_horaria}h</Text>
+    </TouchableOpacity>
   );
 
   return (
@@ -147,17 +185,39 @@ export function TeacherGradesScreen() {
         </View>
       )}
 
-      {isLoading ? (
-        <Text style={formStyles.summaryText}>Carregando notas...</Text>
-      ) : grades.length === 0 ? (
-        <Text style={formStyles.summaryText}>Nenhuma nota encontrada.</Text>
-      ) : (
-        <FlatList
-          data={grades}
-          renderItem={renderGradeItem}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={{ gap: 16 }}
-        />
+      <View style={{ marginBottom: 16 }}>
+        <Text style={componentStyles.cardTitle}>1. Selecione a Disciplina</Text>
+        {isLoading ? (
+          <Text style={formStyles.summaryText}>Carregando disciplinas...</Text>
+        ) : (
+          <FlatList
+            data={subjects}
+            renderItem={renderSubjectItem}
+            keyExtractor={(item) => `subject-${item.id}`}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 12, paddingBottom: 8 }}
+          />
+        )}
+      </View>
+
+      {selectedSubjectId && (
+        <View style={{ flex: 1 }}>
+          <Text style={componentStyles.cardTitle}>2. Alunos e Notas</Text>
+          {isRefreshing ? (
+            <Text style={formStyles.summaryText}>Atualizando lista de alunos...</Text>
+          ) : grades.length === 0 ? (
+            <Text style={formStyles.summaryText}>Nenhum aluno matriculado nesta disciplina.</Text>
+          ) : (
+            <FlatList
+              data={grades}
+              renderItem={renderGradeItem}
+              keyExtractor={(item) => `grade-${item.id}`}
+              scrollEnabled={false}
+              contentContainerStyle={{ gap: 16 }}
+            />
+          )}
+        </View>
       )}
     </ScreenFrame>
   );

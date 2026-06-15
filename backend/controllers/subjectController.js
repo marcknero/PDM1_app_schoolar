@@ -50,23 +50,28 @@ async function getByProfessor(req, res) {
 }
 
 async function update(req, res) {
-  const { id } = req.params;
-  const body = req.body || {};
+  try {
+    const { id } = req.params;
+    const body = req.body || {};
 
-  if (!body.nome || !body.carga_horaria || !body.curso || !body.semestre) {
-    return res.status(400).json({ message: 'Nome, carga horária, curso e semestre são obrigatórios.' });
+    if (!body.nome || !body.carga_horaria || !body.curso || !body.semestre) {
+      return res.status(400).json({ message: 'Nome, carga horária, curso e semestre são obrigatórios.' });
+    }
+
+    const updated = await updateSubject(id, body);
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Disciplina não encontrada.' });
+    }
+
+    return res.json({
+      message: 'Disciplina atualizada com sucesso.',
+      disciplina: updated,
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar disciplina:', error);
+    return res.status(500).json({ message: 'Erro interno ao atualizar disciplina.' });
   }
-
-  const updated = await updateSubject(id, body);
-
-  if (!updated) {
-    return res.status(404).json({ message: 'Disciplina não encontrada.' });
-  }
-
-  return res.json({
-    message: 'Disciplina atualizada com sucesso.',
-    disciplina: updated,
-  });
 }
 
 async function remove(req, res) {

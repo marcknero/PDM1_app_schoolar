@@ -11,8 +11,14 @@ async function create(req, res) {
   try {
     const body = req.body || {};
 
-    if (!body.nome || !body.titulacao || !body.area || !body.email || !body.password) {
-      return res.status(400).json({ message: 'Nome, titulação, área, e-mail e senha são obrigatórios.' });
+    const required = ['nome', 'titulacao', 'area', 'email', 'password'];
+    for (const field of required) {
+      if (!body[field] || String(body[field]).trim() === '') {
+        return res.status(400).json({ 
+          message: `O campo ${field} é obrigatório.`,
+          details: `Verifique se o valor enviado foi: ${body[field]}`
+        });
+      }
     }
 
     const created = await createTeacher(body);
@@ -48,8 +54,13 @@ async function update(req, res) {
     const { id } = req.params;
     const body = req.body || {};
 
-    if (!body.nome || !body.titulacao || !body.area || !body.email) {
-      return res.status(400).json({ message: 'Nome, titulação, área e e-mail são obrigatórios.' });
+    const required = ['nome', 'titulacao', 'area', 'email'];
+    for (const field of required) {
+      if (!body[field] || String(body[field]).trim() === '') {
+        return res.status(400).json({ 
+          message: `O campo ${field} é obrigatório na atualização.`
+        });
+      }
     }
 
     const updated = await updateTeacher(id, body);
