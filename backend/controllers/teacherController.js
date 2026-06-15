@@ -8,18 +8,23 @@ const {
 } = require('../models/teacherModel');
 
 async function create(req, res) {
-  const body = req.body || {};
+  try {
+    const body = req.body || {};
 
-  if (!body.nome || !body.titulacao || !body.area || !body.email || !body.password) {
-    return res.status(400).json({ message: 'Nome, titulação, área, e-mail e senha são obrigatórios.' });
+    if (!body.nome || !body.titulacao || !body.area || !body.email || !body.password) {
+      return res.status(400).json({ message: 'Nome, titulação, área, e-mail e senha são obrigatórios.' });
+    }
+
+    const created = await createTeacher(body);
+
+    return res.status(201).json({
+      message: 'Professor cadastrado com sucesso.',
+      professor: created,
+    });
+  } catch (error) {
+    console.error('Erro ao criar professor:', error);
+    return res.status(500).json({ message: 'Erro interno ao cadastrar professor.' });
   }
-
-  const created = await createTeacher(body);
-
-  return res.status(201).json({
-    message: 'Professor cadastrado com sucesso.',
-    professor: created,
-  });
 }
 
 async function getAll(req, res) {
@@ -39,23 +44,28 @@ async function getById(req, res) {
 }
 
 async function update(req, res) {
-  const { id } = req.params;
-  const body = req.body || {};
+  try {
+    const { id } = req.params;
+    const body = req.body || {};
 
-  if (!body.nome || !body.titulacao || !body.area || !body.email) {
-    return res.status(400).json({ message: 'Nome, titulação, área e e-mail são obrigatórios.' });
+    if (!body.nome || !body.titulacao || !body.area || !body.email) {
+      return res.status(400).json({ message: 'Nome, titulação, área e e-mail são obrigatórios.' });
+    }
+
+    const updated = await updateTeacher(id, body);
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Professor não encontrado.' });
+    }
+
+    return res.json({
+      message: 'Professor atualizado com sucesso.',
+      professor: updated,
+    });
+  } catch (error) {
+    console.error('Erro ao atualizar professor:', error);
+    return res.status(500).json({ message: 'Erro interno ao atualizar professor.' });
   }
-
-  const updated = await updateTeacher(id, body);
-
-  if (!updated) {
-    return res.status(404).json({ message: 'Professor não encontrado.' });
-  }
-
-  return res.json({
-    message: 'Professor atualizado com sucesso.',
-    professor: updated,
-  });
 }
 
 async function remove(req, res) {

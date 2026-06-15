@@ -75,12 +75,16 @@ export function TeacherRegistrationScreen() {
 
     setIsSaving(true);
 
-    const payload = {
+    const payload: any = {
       ...form,
       email: form.email.toLowerCase().trim(),
       tempo_docencia: parseInt(form.tempo_docencia, 10) || 0,
       perfil: 'professor' // Garante que o backend saiba o tipo de usuário
     };
+
+    if (editingId && !form.password?.trim()) {
+      delete payload.password;
+    }
 
     try {
       if (editingId) {

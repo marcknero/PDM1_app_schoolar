@@ -87,11 +87,15 @@ export function StudentRegistrationScreen() {
 
     setIsSaving(true);
 
-    const payload = {
+    const payload: any = {
       ...form,
       email: form.email.toLowerCase().trim(),
       perfil: 'aluno'
     };
+
+    if (editingId && !form.password?.trim()) {
+      delete payload.password;
+    }
 
     try {
       if (editingId) {
