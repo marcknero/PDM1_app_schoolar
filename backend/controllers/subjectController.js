@@ -8,18 +8,23 @@ const {
 } = require('../models/subjectModel');
 
 async function create(req, res) {
-  const body = req.body || {};
+  try {
+    const body = req.body || {};
 
-  if (!body.nome || !body.carga_horaria || !body.curso || !body.semestre) {
-    return res.status(400).json({ message: 'Nome, carga horária, curso e semestre são obrigatórios.' });
+    if (!body.nome || !body.carga_horaria || !body.curso || !body.semestre) {
+      return res.status(400).json({ message: 'Nome, carga horária, curso e semestre são obrigatórios.' });
+    }
+
+    const created = await createSubject(body);
+
+    return res.status(201).json({
+      message: 'Disciplina cadastrada com sucesso.',
+      disciplina: created,
+    });
+  } catch (error) {
+    console.error('Erro ao criar disciplina:', error);
+    return res.status(500).json({ message: 'Erro interno ao cadastrar disciplina.' });
   }
-
-  const created = await createSubject(body);
-
-  return res.status(201).json({
-    message: 'Disciplina cadastrada com sucesso.',
-    disciplina: created,
-  });
 }
 
 async function getAll(req, res) {

@@ -105,12 +105,20 @@ export function SubjectRegistrationScreen() {
 
     setIsSaving(true);
 
+    const payload = {
+      ...form,
+      nome: form.nome.trim(),
+      carga_horaria: parseInt(form.carga_horaria, 10) || 0,
+      semestre: parseInt(form.semestre, 10) || 1,
+      professor_id: form.professor_id ? parseInt(form.professor_id, 10) : null,
+    };
+
     try {
       if (editingId) {
-        await updateRegistration('Disciplina', editingId, form);
+        await updateRegistration('Disciplina', editingId, payload);
         Alert.alert('Atualização realizada', 'A disciplina foi atualizada com sucesso.');
       } else {
-        await persistRegistration('Disciplina', form);
+        await persistRegistration('Disciplina', payload);
         Alert.alert('Cadastro realizado', 'A disciplina foi salva com sucesso.');
       }
 

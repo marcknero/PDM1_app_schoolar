@@ -47,14 +47,18 @@ async function bulletin(req, res) {
   const rows = await fetchBulletinByMatricula(matricula);
 
   return res.json({
-    aluno: student.nome,
+    studentName: student.nome,
     matricula: student.matricula,
-    curso: student.curso,
-    disciplinas: rows.map((row) => ({
-      disciplina: row.disciplina,
+    className: student.curso,
+    average: rows.length > 0 ? rows.reduce((acc, r) => acc + Number(r.media), 0) / rows.length : 0,
+    attendance: "95%", // Mock ou vindo do banco se disponível
+    status: "Regular",
+    subjects: rows.map((row) => ({
+      subject: row.disciplina,
       nota1: Number(row.nota1),
       nota2: Number(row.nota2),
-      media: Number(row.media),
+      grade: Number(row.media),
+      attendance: "98%", // Mock
       situacao: row.situacao,
     })),
   });
@@ -79,7 +83,10 @@ async function bulletinByAlunoId(req, res) {
 async function getGradesByProfessor(req, res) {
   const { professor_id } = req.params;
   const grades = await fetchGradesByProfessor(professor_id);
-  return res.json({ notas: grades });
+  // Mapeia nota_id para id para ser compatível com o keyExtractor do Front
+  return res.json({ 
+    notas: grades.map(g => ({ ...g, id: g.nota_id || g.id })) 
+  });
 }
 
 async function getGradesBySubject(req, res) {
