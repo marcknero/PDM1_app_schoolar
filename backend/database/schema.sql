@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
 ALTER TABLE users DROP CONSTRAINT IF EXISTS check_perfil;
 
 ALTER TABLE users 
-ADD CONSTRAINT check_perfil CHECK (perfil IN ('admin', 'user')) NOT VALID;
+ADD CONSTRAINT check_perfil CHECK (perfil IN ('coordenacao', 'professor', 'aluno')) NOT VALID;
 
 CREATE TABLE IF NOT EXISTS professores (
   id SERIAL PRIMARY KEY,
