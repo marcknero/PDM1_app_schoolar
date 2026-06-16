@@ -81,12 +81,13 @@ export function TeacherRegistrationScreen() {
       area: form.area.trim(),
       email: form.email.toLowerCase().trim(),
       tempo_docencia: parseInt(form.tempo_docencia, 10) || 0,
-      perfil: 'professor'
+      perfil: 'professor',
+      password: form.password ? form.password : undefined
     };
 
-    // Só envia a senha se for um novo cadastro ou se o campo foi preenchido na edição
-    if (!editingId || (form.password && form.password.trim().length > 0)) {
-      payload.password = form.password;
+    // Na edição, se a senha estiver vazia, removemos do payload para não sobrescrever com vazio
+    if (editingId && (!form.password || form.password.trim() === '')) {
+      delete payload.password;
     }
 
     try {
@@ -171,6 +172,7 @@ export function TeacherRegistrationScreen() {
             onChangeText={(value) => setForm((current) => ({ ...current, password: value }))}
             placeholder={editingId ? "Deixe vazio para manter a atual" : "Mínimo 6 caracteres"}
             secureTextEntry
+            autoCapitalize="none"
           />
           <TextField label="Tempo de docência" value={form.tempo_docencia} onChangeText={(value) => setForm((current) => ({ ...current, tempo_docencia: value }))} placeholder="0" keyboardType="number-pad" />
         </View>
