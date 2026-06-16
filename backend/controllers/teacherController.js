@@ -11,13 +11,14 @@ async function create(req, res) {
   try {
     const body = req.body || {};
 
-    const required = ['nome', 'titulacao', 'area', 'email', 'password'];
+        const required = ['nome', 'titulacao', 'area', 'email', 'password'];
     for (const field of required) {
       if (!body[field] || String(body[field]).trim() === '') {
         return res.status(400).json({ 
           message: `O campo ${field} é obrigatório.`,
           details: `Verifique se o valor enviado foi: ${body[field]}`
         });
+
       }
     }
 

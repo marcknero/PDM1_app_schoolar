@@ -76,14 +76,17 @@ export function TeacherRegistrationScreen() {
     setIsSaving(true);
 
     const payload: any = {
-      ...form,
+      nome: form.nome.trim(),
+      titulacao: form.titulacao.trim(),
+      area: form.area.trim(),
       email: form.email.toLowerCase().trim(),
       tempo_docencia: parseInt(form.tempo_docencia, 10) || 0,
-      perfil: 'professor' // Garante que o backend saiba o tipo de usuário
+      perfil: 'professor'
     };
 
-    if (editingId && !form.password?.trim()) {
-      delete payload.password;
+    // Só envia a senha se for um novo cadastro ou se o campo foi preenchido na edição
+    if (!editingId || (form.password && form.password.trim().length > 0)) {
+      payload.password = form.password;
     }
 
     try {

@@ -92,6 +92,7 @@ export function TeacherGradesScreen() {
       setNota2('');
       
       if (selectedSubjectId) {
+        // Recarrega a listagem para mostrar o "boletim" atualizado do aluno
         await loadGradesForSubject(selectedSubjectId);
       }
     } catch (error) {

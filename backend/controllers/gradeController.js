@@ -92,7 +92,10 @@ async function getGradesByProfessor(req, res) {
 async function getGradesBySubject(req, res) {
   const { disciplina_id } = req.params;
   const grades = await fetchGradesBySubject(disciplina_id);
-  return res.json({ notas: grades });
+  // Mapeia nota_id para id para compatibilidade com o keyExtractor do FlatList
+  return res.json({ 
+    notas: grades.map(g => ({ ...g, id: g.nota_id || g.id })) 
+  });
 }
 
 async function remove(req, res) {
