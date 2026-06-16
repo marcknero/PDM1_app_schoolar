@@ -314,13 +314,15 @@ export async function fetchBulletin(matricula = '2024001'): Promise<BulletinData
   };
 }
 
-function buildAcademicPayload(entity: string, payload: Record<string, string>) {
+function buildAcademicPayload(entity: string, payload: any) {
   if (entity === 'Aluno') {
     return {
       nome: payload.nome,
       matricula: payload.matricula,
       curso: payload.curso || payload.turma || 'Não informado',
       email: payload.email || null,
+      password: payload.password,
+      perfil: payload.perfil,
       telefone: payload.telefone || null,
       cep: payload.cep || null,
       endereco: payload.endereco || null,
@@ -336,6 +338,8 @@ function buildAcademicPayload(entity: string, payload: Record<string, string>) {
       area: payload.area || payload.especialidade || 'Não informado',
       tempo_docencia: parseInteger(payload.tempo_docencia, 0),
       email: payload.email,
+      password: payload.password,
+      perfil: payload.perfil,
     };
   }
 
